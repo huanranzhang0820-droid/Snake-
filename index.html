@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>贪吃蛇（iPhone）</title>
+  <title>Love Snake ❤️</title>
   <style>
-    :root { font-family: system-ui,-apple-system,Segoe UI,Roboto,"PingFang SC","Microsoft YaHei",sans-serif; }
+    :root { font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
     body { margin:0; background:#0b0f14; color:#e7eef8; display:flex; min-height:100vh; align-items:center; justify-content:center; }
     .wrap { width:min(520px, 94vw); }
     .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -30,12 +30,12 @@
   <div class="wrap">
     <div class="topbar">
       <div class="stats">
-        <div>分数：<span id="score">0</span></div>
-        <div>最高：<span id="best">0</span></div>
+        <div>Score: <span id="score">0</span></div>
+        <div>Best: <span id="best">0</span></div>
       </div>
       <div class="btns">
-        <button id="btnPause">暂停</button>
-        <button id="btnRestart">重开</button>
+        <button id="btnPause">Pause</button>
+        <button id="btnRestart">Restart</button>
       </div>
     </div>
 
@@ -44,28 +44,28 @@
 
       <div class="controls">
         <div class="dpad">
-          <button class="blank"> </button>
+          <button class="blank"></button>
           <button data-dir="U">↑</button>
-          <button class="blank"> </button>
+          <button class="blank"></button>
 
           <button data-dir="L">←</button>
-          <button id="btnAction">开始</button>
+          <button id="btnAction">Start</button>
           <button data-dir="R">→</button>
 
-          <button class="blank"> </button>
+          <button class="blank"></button>
           <button data-dir="D">↓</button>
-          <button class="blank"> </button>
+          <button class="blank"></button>
         </div>
 
         <div class="rightcol">
-          <button id="btnSpeed">速度：普通</button>
-          <button id="btnGrid">网格：20×20</button>
+          <button id="btnSpeed">Speed: Normal</button>
+          <button id="btnGrid">Grid: 20×20</button>
         </div>
       </div>
 
       <div class="hint">
-        iPhone：点方向键或在画布上<strong>滑动</strong>控制。<br/>
-        食物是小爱心 ❤️。吃到加分，撞墙或撞到自己结束。
+        Swipe on the board or tap arrows to move.<br/>
+        Eat ❤️ hearts to score points. Don’t hit walls or yourself.
       </div>
     </div>
   </div>
@@ -87,10 +87,10 @@
   let cell = canvas.width / gridSize;
 
   const speeds = [
-    {name:'慢',   ms:140},
-    {name:'普通', ms:95},
-    {name:'快',   ms:70},
-    {name:'地狱', ms:50},
+    {name:'Slow', ms:140},
+    {name:'Normal', ms:95},
+    {name:'Fast', ms:70},
+    {name:'Insane', ms:50},
   ];
   let speedIndex = 1;
 
@@ -106,8 +106,7 @@
   function placeFood() {
     while (true) {
       const p = randCell();
-      const hit = snake.some(s => s.x === p.x && s.y === p.y);
-      if (!hit) return p;
+      if (!snake.some(s => s.x === p.x && s.y === p.y)) return p;
     }
   }
 
@@ -120,10 +119,9 @@
     running = false;
     paused = false;
     clearInterval(timer);
-    timer = null;
     scoreEl.textContent = score;
-    btnAction.textContent = '开始';
-    btnPause.textContent = '暂停';
+    btnAction.textContent = 'Start';
+    btnPause.textContent = 'Pause';
     draw();
   }
 
@@ -131,7 +129,7 @@
     if (running) return;
     running = true;
     paused = false;
-    btnAction.textContent = '进行中';
+    btnAction.textContent = 'Playing';
     loop();
   }
 
@@ -146,29 +144,23 @@
 
   function gameOver() {
     running = false;
-    paused = false;
     clearInterval(timer);
-    timer = null;
-    btnAction.textContent = '开始';
-    alert('游戏结束！分数：' + score);
+    alert('Game Over! Score: ' + score);
+    if (score > best) {
+      best = score;
+      localStorage.setItem('snake_best', best);
+      bestEl.textContent = best;
+    }
   }
 
   function step() {
     dir = nextDir;
-
     const head = snake[0];
     const nx = head.x + dir.x;
     const ny = head.y + dir.y;
 
-    if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) {
-      syncBest();
-      return gameOver();
-    }
-
-    if (snake.some((s, i) => i !== 0 && s.x === nx && s.y === ny)) {
-      syncBest();
-      return gameOver();
-    }
+    if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) return gameOver();
+    if (snake.some((s,i)=>i && s.x===nx && s.y===ny)) return gameOver();
 
     snake.unshift({x:nx, y:ny});
 
@@ -181,145 +173,47 @@
     }
   }
 
-  function syncBest() {
-    if (score > best) {
-      best = score;
-      localStorage.setItem('snake_best', String(best));
-      bestEl.textContent = best;
-    }
-  }
-
-  function drawGrid() {
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 1;
-    for (let i=1;i<gridSize;i++){
-      ctx.beginPath();
-      ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,canvas.height);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0,i*cell); ctx.lineTo(canvas.width,i*cell);
-      ctx.stroke();
-    }
-  }
-
-  function roundRect(x, y, w, h, r, fill) {
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.arcTo(x+w, y,   x+w, y+h, r);
-    ctx.arcTo(x+w, y+h, x,   y+h, r);
-    ctx.arcTo(x,   y+h, x,   y,   r);
-    ctx.arcTo(x,   y,   x+w, y,   r);
-    ctx.closePath();
-    if (fill) ctx.fill();
-  }
-
-  function drawHeart(cellX, cellY) {
-    // 用 emoji 绘制小爱心：简单、无需图片
-    const cx = cellX*cell + cell/2;
-    const cy = cellY*cell + cell/2;
-    ctx.font = `bold ${Math.floor(cell*0.78)}px system-ui, Apple Color Emoji`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('❤️', cx, cy+1);
+  function drawHeart(x,y){
+    ctx.font = `${Math.floor(cell*0.8)}px Apple Color Emoji`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('❤️', x*cell+cell/2, y*cell+cell/2+1);
   }
 
   function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawGrid();
-
-    // 食物：小爱心
     drawHeart(food.x, food.y);
-
-    // 蛇
-    snake.forEach((s, i) => {
-      ctx.fillStyle = i===0 ? '#7cf2c4' : '#42c7ff';
-      roundRect(s.x*cell+2, s.y*cell+2, cell-4, cell-4, 6, true);
+    snake.forEach((s,i)=>{
+      ctx.fillStyle = i ? '#42c7ff' : '#7cf2c4';
+      ctx.fillRect(s.x*cell+2, s.y*cell+2, cell-4, cell-4);
     });
-
-    if (paused) {
-      ctx.fillStyle = 'rgba(0,0,0,0.45)';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('已暂停', canvas.width/2, canvas.height/2);
-    }
-
-    if (!running) {
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 18px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('点“开始”或滑动/点方向键开始', canvas.width/2, canvas.height/2);
-    }
   }
 
-  function setDir(dx, dy) {
-    if (dx === -dir.x && dy === -dir.y) return;
-    nextDir = {x:dx, y:dy};
+  function setDir(x,y){
+    if (x === -dir.x && y === -dir.y) return;
+    nextDir={x,y};
     if (!running) start();
   }
 
-  // 屏幕方向键
-  document.querySelectorAll('[data-dir]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const d = btn.dataset.dir;
-      if (d==='U') setDir(0,-1);
-      if (d==='D') setDir(0,1);
-      if (d==='L') setDir(-1,0);
-      if (d==='R') setDir(1,0);
-    });
+  document.querySelectorAll('[data-dir]').forEach(b=>{
+    b.onclick=()=>({U:[0,-1],D:[0,1],L:[-1,0],R:[1,0]}[b.dataset.dir]&&setDir(...({U:[0,-1],D:[0,1],L:[-1,0],R:[1,0]}[b.dataset.dir])));
   });
 
-  // 触摸滑动
-  let touchStart = null;
-  canvas.addEventListener('touchstart', (e) => {
-    const t = e.changedTouches[0];
-    touchStart = {x: t.clientX, y: t.clientY};
-  }, {passive:true});
+  let startTouch=null;
+  canvas.ontouchstart=e=>startTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  canvas.ontouchend=e=>{
+    if(!startTouch)return;
+    let dx=e.changedTouches[0].clientX-startTouch.x;
+    let dy=e.changedTouches[0].clientY-startTouch.y;
+    if(Math.abs(dx)>Math.abs(dy)) setDir(dx>0?1:-1,0);
+    else setDir(0,dy>0?1:-1);
+    startTouch=null;
+  };
 
-  canvas.addEventListener('touchend', (e) => {
-    if (!touchStart) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStart.x;
-    const dy = t.clientY - touchStart.y;
-    const absX = Math.abs(dx), absY = Math.abs(dy);
-    const threshold = 18;
-    if (absX < threshold && absY < threshold) return;
-    if (absX > absY) setDir(dx>0 ? 1: -1, 0);
-    else setDir(0, dy>0 ? 1: -1);
-    touchStart = null;
-  }, {passive:true});
-
-  function togglePause() {
-    if (!running) return;
-    paused = !paused;
-    btnPause.textContent = paused ? '继续' : '暂停';
-    draw();
-  }
-
-  btnPause.addEventListener('click', togglePause);
-  btnRestart.addEventListener('click', () => { syncBest(); reset(); });
-  btnAction.addEventListener('click', () => { if (!running) start(); });
-
-  btnSpeed.addEventListener('click', () => {
-    speedIndex = (speedIndex + 1) % speeds.length;
-    btnSpeed.textContent = '速度：' + speeds[speedIndex].name;
-    if (running) {
-      // 重新设定速度
-      clearInterval(timer);
-      loop();
-    }
-  });
-
-  btnGrid.addEventListener('click', () => {
-    gridSize = (gridSize === 20) ? 25 : (gridSize === 25 ? 16 : 20);
-    btnGrid.textContent = '网格：' + gridSize + '×' + gridSize;
-    cell = canvas.width / gridSize;
-    syncBest();
-    reset();
-  });
+  btnPause.onclick=()=>{paused=!paused; btnPause.textContent=paused?'Resume':'Pause';};
+  btnRestart.onclick=reset;
+  btnSpeed.onclick=()=>{speedIndex=(speedIndex+1)%speeds.length; btnSpeed.textContent='Speed: '+speeds[speedIndex].name; if(running)loop();};
+  btnGrid.onclick=()=>{gridSize=gridSize===20?25:gridSize===25?16:20; btnGrid.textContent='Grid: '+gridSize+'×'+gridSize; cell=canvas.width/gridSize; reset();};
 
   reset();
 })();
